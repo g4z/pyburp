@@ -14,7 +14,8 @@ socket_send.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
 while True:
 	try:
 		message = socket_recv.recvfrom(1024)
-		print(message)
+		syslog.syslog("Received: " + message)
+
 	except BlockingIOError:
 		pass
 

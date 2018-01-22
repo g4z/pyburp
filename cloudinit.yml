@@ -1,5 +1,87 @@
 #cloud-config
 
+# Valid Values:
+#   name: The user's login name
+#   gecos: The user name's real name, i.e. "Bob B. Smith"
+#   homedir: Optional. Set to the local path you want to use. Defaults to
+#           /home/<username>
+#   primary-group: define the primary group. Defaults to a new group created
+#           named after the user.
+#   groups:  Optional. Additional groups to add the user to. Defaults to none
+#   selinux-user:  Optional. The SELinux user for the user's login, such as
+#           "staff_u". When this is omitted the system will select the default
+#           SELinux user.
+#   lock_passwd: Defaults to true. Lock the password to disable password login
+#   inactive: Create the user as inactive
+#   passwd: The hash -- not the password itself -- of the password you want
+#           to use for this user. You can generate a safe hash via:
+#               mkpasswd --method=SHA-512 --rounds=4096
+#           (the above command would create from stdin an SHA-512 password hash
+#           with 4096 salt rounds)
+#
+#           Please note: while the use of a hashed password is better than
+#               plain text, the use of this feature is not ideal. Also,
+#               using a high number of salting rounds will help, but it should
+#               not be relied upon.
+#
+#               To highlight this risk, running John the Ripper against the
+#               example hash above, with a readily available wordlist, revealed
+#               the true password in 12 seconds on a i7-2620QM.
+#
+#               In other words, this feature is a potential security risk and is
+#               provided for your convenience only. If you do not fully trust the
+#               medium over which your cloud-config will be transmitted, then you
+#               should use SSH authentication only.
+#
+#               You have thus been warned.
+#   no-create-home: When set to true, do not create home directory.
+#   no-user-group: When set to true, do not create a group named after the user.
+#   no-log-init: When set to true, do not initialize lastlog and faillog database.
+#   ssh-import-id: Optional. Import SSH ids
+#   ssh-authorized-keys: Optional. [list] Add keys to user's authorized keys file
+#   sudo: Defaults to none. Set to the sudo string you want to use, i.e.
+#           ALL=(ALL) NOPASSWD:ALL. To add multiple rules, use the following
+#           format.
+#               sudo:
+#                   - ALL=(ALL) NOPASSWD:/bin/mysql
+#                   - ALL=(ALL) ALL
+#           Note: Please double check your syntax and make sure it is valid.
+#               cloud-init does not parse/check the syntax of the sudo
+#               directive.
+#   system: Create the user as a system user. This means no home directory.
+#   snapuser: Create a Snappy (Ubuntu-Core) user via the snap create-user
+#             command available on Ubuntu systems.  If the user has an account
+#             on the Ubuntu SSO, specifying the email will allow snap to
+#             request a username and any public ssh keys and will import
+#             these into the system with username specifed by SSO account.
+#             If 'username' is not set in SSO, then username will be the
+#             shortname before the email domain.
+#
+# Default user creation:
+#
+# Unless you define users, you will get a 'ubuntu' user on ubuntu systems with the
+# legacy permission (no password sudo, locked user, etc). If however, you want
+# to have the 'ubuntu' user in addition to other users, you need to instruct
+# cloud-init that you also want the default user. To do this use the following
+# syntax:
+#    users:
+#      - default
+#      - bob
+#      - ....
+#  foobar: ...
+#
+# users[0] (the first user in users) overrides the user directive.
+#
+# The 'default' user above references the distro's config:
+# system_info:
+#   default_user:
+#    name: Ubuntu
+#    plain_text_passwd: 'ubuntu'
+#    home: /home/ubuntu
+#    shell: /bin/bash
+#    lock_passwd: True
+#    gecos: Ubuntu
+#    groups: [adm, audio, cdrom, dialout, floppy, video, plugdev, dip, netdev]
 users:
 - name: gareth
   ssh-authorized-keys:
@@ -8,40 +90,78 @@ users:
   groups: sudo
   shell: /bin/bash
 
-# packages:
-#  - curl
-#  - vim
-#  - htop
+# Install additional packages on first boot
+#
+# Default: none
+#
+# if packages are specified, this apt_update will be set to true
+#
+# packages may be supplied as a single package name or as a list
+# with the format [<package>, <version>] wherein the specifc
+# package version will be installed.
+packages:
+ - curl
+ - vim
+ - htop
+ - git
 
+# boot commands
+# default: none
+# this is very similar to runcmd, but commands run very early
+# in the boot process, only slightly after a 'boothook' would run.
+# bootcmd should really only be used for things that could not be
+# done later in the boot process.  bootcmd is very much like
+# boothook, but possibly with more friendly.
+# - bootcmd will run on every boot
+# - the INSTANCE_ID variable will be set to the current instance id.
+# - you can use 'cloud-init-per' command to help only run once
+# bootcmd:
+#  - cd srv
+#  - [ cloud-init-per, once, mymkfs, mkfs, /dev/vdb ]
+
+# run commands
+# default: none
+# runcmd contains a list of either lists or a string
+# each item will be executed in order at rc.local like level with
+# output to the console
+# - runcmd only runs during the first boot
+# - if the item is a list, the items will be properly executed as if
+#   passed to execve(3) (with the first arg as the command).
+# - if the item is a string, it will be simply written to the file and
+#   will be interpreted by 'sh'
+#
+# Note, that the list has to be proper yaml, so you have to quote
+# any characters yaml would eat (':' can be problematic)
 runcmd:
-  - python3 /tmp/sender.py
+  - cd 
+  - git clone https://github.com/g4z/pyburp.git /srv/pyburp
+  - python3 /srv/pyburp/v1.py
 
+# write_files:
+# - path: /tmp/sender.py
+#   owner: root:root
+#   permissions: '0644'
+#   content: |
 
-write_files:
-- path: /tmp/sender.py
-  owner: root:root
-  permissions: '0644'
-  content: |
+#     import time
+#     from socket import *
 
-    import time
-    from socket import *
+#     payload = b'hello world'
 
-    payload = b'hello world'
+#     socket_recv = socket(AF_INET, SOCK_DGRAM)
+#     socket_recv.bind(('', 12345))
+#     socket_recv.setblocking(0)
 
-    socket_recv = socket(AF_INET, SOCK_DGRAM)
-    socket_recv.bind(('', 12345))
-    socket_recv.setblocking(0)
+#     socket_send = socket(AF_INET, SOCK_DGRAM)
+#     socket_send.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
 
-    socket_send = socket(AF_INET, SOCK_DGRAM)
-    socket_send.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+#     while True:
+#       try:
+#         message = socket_recv.recvfrom(1024)
+#         print(message)
+#       except BlockingIOError:
+#         pass
 
-    while True:
-      try:
-        message = socket_recv.recvfrom(1024)
-        print(message)
-      except BlockingIOError:
-        pass
+#       socket_send.sendto(payload, ('127.0.0.255', 12345))
 
-      socket_send.sendto(payload, ('127.0.0.255', 12345))
-
-      time.sleep(1)
+#       time.sleep(1)
