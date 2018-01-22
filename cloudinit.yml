@@ -1,0 +1,47 @@
+#cloud-config
+
+users:
+- name: gareth
+  ssh-authorized-keys:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDr+NEXknBpNnXcFYbv0a2Bv+G3Yefm/CPgULuEXS6Tg7VGVKmdn4qXMeBcj6qWHQn7jC4cw9MZg6K4tq3eDFNaPUJmXG9bwiFyg5/HtFIPdoys6Rl0MbJlcPKO6OCJRTQTuMlS01UioStVrHdhrRo/PG9GkRrQpWVXtzqMEUvzrM/2qvM6wKHOEAafQ/5IQJcy4Fug5DhFwe3aA0VVZhg5zgZW+gna2/6vkkmilQm+HKtEY5OKyHwuhSngaK4TGcL3REblCmYeyfE8I38gMMg4/aXKlZ+A11xjNzZHjojujfw929g79u0PMVumV5U4a/SUJAUFDnsuIfglxTvi8/3H gareth@t450
+  sudo: ['ALL=(ALL) NOPASSWD:ALL']
+  groups: sudo
+  shell: /bin/bash
+
+# packages:
+#  - curl
+#  - vim
+#  - htop
+
+runcmd:
+  - python3 /tmp/sender.py
+
+
+write_files:
+- path: /tmp/sender.py
+  owner: root:root
+  permissions: '0644'
+  content: |
+
+    import time
+    from socket import *
+
+    payload = b'hello world'
+
+    socket_recv = socket(AF_INET, SOCK_DGRAM)
+    socket_recv.bind(('', 12345))
+    socket_recv.setblocking(0)
+
+    socket_send = socket(AF_INET, SOCK_DGRAM)
+    socket_send.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+
+    while True:
+      try:
+        message = socket_recv.recvfrom(1024)
+        print(message)
+      except BlockingIOError:
+        pass
+
+      socket_send.sendto(payload, ('127.0.0.255', 12345))
+
+      time.sleep(1)
