@@ -4,11 +4,15 @@ import sys
 import socket
 import time
 
+if len(sys.argv) < 2:
+    print("Invalid invocation. Byebye...")
+    sys.exit(254)
+
 # server = "irc.freenode.net"
 server = "10.93.188.1"
 port = 6667
 channel = "#test"
-botnick = "herbot_001"
+botnick = sys.argv[1]
 
 nodes = []
 
