@@ -135,7 +135,7 @@ packages:
 runcmd:
   - cd 
   - git clone https://github.com/g4z/pyburp.git /srv/pyburp
-  - python3 /srv/pyburp/v1.py
+  - python3 /srv/pyburp/v2.py
 
 # write_files:
 # - path: /tmp/sender.py
