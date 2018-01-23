@@ -105,7 +105,8 @@ def main():
             # print("Broadcast HELLO")
             socket_send.sendto(
                 bytes("HELLO", "UTF-8"),
-                ('127.0.0.255', 12345)
+                # ('127.0.0.255', 12345)
+                ('255.255.255.255', 12345)
             )
 
         # print(".")

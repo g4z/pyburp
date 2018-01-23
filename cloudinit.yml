@@ -132,9 +132,9 @@ users:
 #
 # Note, that the list has to be proper yaml, so you have to quote
 # any characters yaml would eat (':' can be problematic)
-# runcmd:
-#   - git clone https://github.com/g4z/pyburp.git /srv/pyburp
-#   - python3 /srv/pyburp/v2.py {{botnick}}
+runcmd:
+  - git clone https://github.com/g4z/pyburp.git /srv/pyburp
+  - python3 /srv/pyburp/v2.py {{botnick}}
 
 # write_files:
 # - path: /tmp/sender.py
