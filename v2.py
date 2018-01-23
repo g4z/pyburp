@@ -31,19 +31,24 @@ irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 def connect():
     print("Connecting to [%s:%u]" % (server, port))
     irc.connect((server, port))
+    print(irc.recv(1024).decode("UTF-8"))
+    print(irc.recv(1024).decode("UTF-8"))
 
 def authorise():
     print("Authorising as [%s]" % (botnick))
     irc.send(bytes("USER " + botnick + " " + botnick + " " + botnick + " :" + botnick + "\n", "UTF-8"))
     irc.send(bytes("NICK " + botnick + "\n", "UTF-8"))
+    print(irc.recv(1024).decode("UTF-8"))
+    print(irc.recv(1024).decode("UTF-8"))
 
 def joinChannel():
     print("Joining channel [%s]" % (channel))
     buffer = ""
     irc.send(bytes("JOIN " + channel + "\n", "UTF-8"))
     while buffer.find("End of /NAMES list.") == -1:  
-        buffer = irc.recv(2048).decode("UTF-8")
+        buffer = irc.recv(1024).decode("UTF-8")
         buffer = buffer.strip('\n\r')
+        print(buffer)
 
 def ping(): # respond to server Pings.
     print("Sending PONG")
@@ -79,11 +84,11 @@ def main():
             pass
 
         try:
-            response = irc.recv(2048).decode()
+            response = irc.recv(1024).decode()
             print("Received: %s" % response)
 
-            if response.find('PRIVMSG') != -1:
-                sendmsg("...whatever...")
+            # if response.find('PRIVMSG') != -1:
+            #     sendmsg("...whatever...")
 
             if response.find('PING') != -1:
                 pong()
@@ -103,7 +108,7 @@ def main():
                 ('127.0.0.255', 12345)
             )
 
-        print(".")
+        # print(".")
 
         time.sleep(1)
 

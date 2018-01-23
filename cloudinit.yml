@@ -99,11 +99,11 @@ users:
 # packages may be supplied as a single package name or as a list
 # with the format [<package>, <version>] wherein the specifc
 # package version will be installed.
-packages:
- - curl
- - vim
- - htop
- - git
+# packages:
+#  - curl
+#  - vim
+#  - htop
+#  - git
 
 # boot commands
 # default: none
@@ -132,9 +132,9 @@ packages:
 #
 # Note, that the list has to be proper yaml, so you have to quote
 # any characters yaml would eat (':' can be problematic)
-runcmd:
-  - git clone https://github.com/g4z/pyburp.git /srv/pyburp
-  - python3 /srv/pyburp/v2.py {{botnick}}
+# runcmd:
+#   - git clone https://github.com/g4z/pyburp.git /srv/pyburp
+#   - python3 /srv/pyburp/v2.py {{botnick}}
 
 # write_files:
 # - path: /tmp/sender.py
